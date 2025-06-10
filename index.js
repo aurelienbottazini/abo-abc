@@ -87,13 +87,13 @@ function calculateAbcWithTreeSitter(code) {
 
 function main() {
   const args = process.argv.slice(2);
-  
+
   if (args.length > 1) {
     console.error("Usage: abc [filepath]");
     console.error("If no filepath is provided, reads from stdin");
     process.exit(1);
   }
-  
+
   if (args.length === 1) {
     // Read from file
     const filepath = args[0];
@@ -108,19 +108,19 @@ function main() {
   } else {
     // Read from stdin
     let input = '';
-    
+
     // Check if stdin is a TTY (interactive terminal)
     if (process.stdin.isTTY) {
       console.error("No input provided. Usage: abc [filepath] or pipe content to stdin");
       process.exit(1);
     }
-    
+
     process.stdin.setEncoding('utf8');
-    
+
     process.stdin.on('data', (chunk) => {
       input += chunk;
     });
-    
+
     process.stdin.on('end', () => {
       if (input.trim()) {
         const abcMetrics = calculateAbcWithTreeSitter(input);
