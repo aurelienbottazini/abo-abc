@@ -2,6 +2,7 @@
 
 const Parser = require("tree-sitter");
 const JavaScript = require("tree-sitter-javascript");
+const fs = require("fs");
 
 function calculateAbcWithTreeSitter(code) {
   // 1. Initialize the Parser
@@ -84,24 +85,52 @@ function calculateAbcWithTreeSitter(code) {
   };
 }
 
-// --- Example Usage ---
-const sampleCode = `
-function calculateTotalPrice(price, quantity, discount) {
-  let total = price * quantity;
-  if (discount && discount > 0) {
-    total -= (total * discount) / 100;
+function main() {
+  const args = process.argv.slice(2);
+  
+  if (args.length > 1) {
+    console.error("Usage: abc [filepath]");
+    console.error("If no filepath is provided, reads from stdin");
+    process.exit(1);
   }
-  return total;
+  
+  if (args.length === 1) {
+    // Read from file
+    const filepath = args[0];
+    try {
+      const code = fs.readFileSync(filepath, 'utf8');
+      const abcMetrics = calculateAbcWithTreeSitter(code);
+      console.log("ABC Metric:", abcMetrics);
+    } catch (error) {
+      console.error(`Error reading file ${filepath}:`, error.message);
+      process.exit(1);
+    }
+  } else {
+    // Read from stdin
+    let input = '';
+    
+    // Check if stdin is a TTY (interactive terminal)
+    if (process.stdin.isTTY) {
+      console.error("No input provided. Usage: abc [filepath] or pipe content to stdin");
+      process.exit(1);
+    }
+    
+    process.stdin.setEncoding('utf8');
+    
+    process.stdin.on('data', (chunk) => {
+      input += chunk;
+    });
+    
+    process.stdin.on('end', () => {
+      if (input.trim()) {
+        const abcMetrics = calculateAbcWithTreeSitter(input);
+        console.log("ABC Metric:", abcMetrics);
+      } else {
+        console.error("No input provided");
+        process.exit(1);
+      }
+    });
+  }
 }
 
-const itemPrice = 50;
-let itemCount = 2;
-const discountPercentage = 10;
-
-const finalPrice = calculateTotalPrice(itemPrice, itemCount, discountPercentage);
-console.log("Final price:", finalPrice);
-`;
-
-const abcMetrics = calculateAbcWithTreeSitter(sampleCode);
-
-console.log("ABC Metric (from Tree-sitter):", abcMetrics);
+main();
