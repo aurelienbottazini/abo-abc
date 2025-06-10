@@ -1,4 +1,4 @@
-// #!/usr/bin/env node
+#!/usr/bin/env node
 
 const Parser = require("tree-sitter");
 const JavaScript = require("tree-sitter-javascript");
